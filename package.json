@@ -1,0 +1,41 @@
+{
+  "name": "prductr-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo for prductr orchestration ecosystem",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/habitusnet/prductr-com.git"
+  },
+  "keywords": [
+    "orchestration",
+    "multi-agent",
+    "LLM",
+    "monorepo",
+    "conductor",
+    "lisa",
+    "carlos"
+  ],
+  "author": "habitusnet",
+  "license": "MIT"
+}
