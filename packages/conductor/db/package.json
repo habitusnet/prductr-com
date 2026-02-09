@@ -1,0 +1,33 @@
+{
+  "name": "@conductor/db",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Database layer for Conductor - supports SQLite (local) and PostgreSQL (production)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@conductor/core": "*",
+    "@neondatabase/serverless": "^0.10.4",
+    "better-sqlite3": "^11.7.0",
+    "drizzle-orm": "^0.38.3"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@vitest/coverage-v8": "^4.0.16",
+    "drizzle-kit": "^0.30.1",
+    "typescript": "^5.7.2",
+    "vitest": "^4.0.16"
+  }
+}

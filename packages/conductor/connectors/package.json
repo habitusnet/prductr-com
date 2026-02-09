@@ -1,0 +1,28 @@
+{
+  "name": "@conductor/connectors",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Connectors for external services - GitHub, Slack, Discord, LLM providers",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@conductor/core": "*",
+    "@octokit/rest": "^21.0.2",
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@google/generative-ai": "^0.21.0",
+    "openai": "^4.76.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.16",
+    "typescript": "^5.7.2",
+    "vitest": "^4.0.16"
+  }
+}

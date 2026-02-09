@@ -1,0 +1,32 @@
+{
+  "name": "@conductor/e2b-runner",
+  "version": "1.0.0",
+  "description": "E2B sandbox runner for Conductor agents",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "dev": "tsup src/index.ts --format esm --dts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@conductor/core": "*",
+    "@conductor/state": "*",
+    "@e2b/code-interpreter": "^1.0.4",
+    "e2b": "^1.0.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@vitest/coverage-v8": "^4.0.16",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^4.0.16"
+  },
+  "peerDependencies": {
+    "@conductor/core": "*"
+  }
+}

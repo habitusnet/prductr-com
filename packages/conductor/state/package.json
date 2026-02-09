@@ -1,0 +1,39 @@
+{
+  "name": "@conductor/state",
+  "version": "1.0.0",
+  "description": "State management for Conductor (SQLite + optional Redis)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@conductor/core": "*",
+    "better-sqlite3": "^11.7.0"
+  },
+  "optionalDependencies": {
+    "ioredis": "^5.4.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@vitest/coverage-v8": "^4.0.16",
+    "typescript": "^5.7.2",
+    "vitest": "^4.0.16"
+  },
+  "files": [
+    "dist"
+  ]
+}
