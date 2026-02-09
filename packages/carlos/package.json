@@ -1,0 +1,42 @@
+{
+  "name": "@prductr/carlos",
+  "version": "1.0.0",
+  "description": "AI-powered product roadmap generation and market fit assessment",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "carlos": "dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2",
+    "vitest": "^4.0.18"
+  },
+  "keywords": [
+    "roadmap",
+    "product-management",
+    "market-fit",
+    "scopecraft",
+    "planning"
+  ],
+  "author": "prductr",
+  "license": "MIT"
+}
