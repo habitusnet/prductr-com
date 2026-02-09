@@ -1,0 +1,42 @@
+{
+  "name": "@prductr/conductor",
+  "version": "1.0.0",
+  "description": "Multi-tenant LLM orchestration platform - Meta package",
+  "type": "module",
+  "keywords": [
+    "llm",
+    "orchestration",
+    "multi-agent",
+    "coordination",
+    "mcp",
+    "multi-tenant"
+  ],
+  "author": "prductr",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/prductr-com/conductor.git"
+  },
+  "homepage": "https://conductor.prductr.com",
+  "bugs": {
+    "url": "https://github.com/prductr-com/conductor/issues"
+  },
+  "dependencies": {
+    "@conductor/core": "*",
+    "@conductor/state": "*",
+    "@conductor/db": "*",
+    "@conductor/mcp-server": "*",
+    "@conductor/cli": "*",
+    "@conductor/e2b-runner": "*",
+    "@conductor/connectors": "*",
+    "@conductor/observer": "*",
+    "@conductor/secrets": "*"
+  },
+  "scripts": {
+    "build": "echo 'Meta package - build individual packages'",
+    "test": "echo 'Meta package - test individual packages'"
+  },
+  "files": [
+    "README.md"
+  ]
+}
