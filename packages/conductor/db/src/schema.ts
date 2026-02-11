@@ -1,127 +1,132 @@
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import { pgTable, varchar, text, integer, bigint, numeric, boolean, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
 // ============================================================================
 // Organizations (Multi-Tenancy Root)
 // ============================================================================
 
-export const organizations = sqliteTable("organizations", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  slug: text("slug").notNull().unique(),
-  plan: text("plan", { enum: ["free", "pro", "enterprise"] }).default("free"),
-  billingEmail: text("billing_email"),
+export const organizations = pgTable("organizations", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull().unique(),
+  plan: varchar("plan", { length: 50, enum: ["free", "pro", "enterprise"] }).default("free"),
+  billingEmail: varchar("billing_email", { length: 255 }),
   apiKeys: text("api_keys").default("[]"), // JSON array
   settings: text("settings").default("{}"), // JSON object
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const organizationMembers = sqliteTable("organization_members", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
+export const organizationMembers = pgTable("organization_members", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  organizationId: varchar("organization_id", { length: 255 })
     .notNull()
     .references(() => organizations.id, { onDelete: "cascade" }),
-  userId: text("user_id").notNull(),
-  role: text("role", { enum: ["owner", "admin", "member", "viewer"] }).default(
+  userId: varchar("user_id", { length: 255 }).notNull(),
+  role: varchar("role", { length: 50, enum: ["owner", "admin", "member", "viewer"] }).default(
     "member",
   ),
-  invitedAt: text("invited_at").default("CURRENT_TIMESTAMP"),
-  joinedAt: text("joined_at"),
+  invitedAt: timestamp("invited_at").defaultNow(),
+  joinedAt: timestamp("joined_at"),
 });
 
 // ============================================================================
 // Agents (Global + Organization-scoped)
 // ============================================================================
 
-export const agents = sqliteTable("agents", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id").references(() => organizations.id, {
+export const agents = pgTable("agents", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  organizationId: varchar("organization_id", { length: 255 }).references(() => organizations.id, {
     onDelete: "cascade",
   }),
-  name: text("name").notNull(),
-  provider: text("provider", {
+  name: varchar("name", { length: 255 }).notNull(),
+  provider: varchar("provider", {
+    length: 50,
     enum: ["anthropic", "google", "openai", "meta", "custom"],
   }).notNull(),
-  model: text("model").notNull(),
+  model: varchar("model", { length: 255 }).notNull(),
   capabilities: text("capabilities").default("[]"), // JSON array
-  costPerTokenInput: real("cost_per_token_input").default(0),
-  costPerTokenOutput: real("cost_per_token_output").default(0),
-  quotaLimit: integer("quota_limit"),
-  quotaUsed: integer("quota_used").default(0),
-  quotaResetAt: text("quota_reset_at"),
-  status: text("status", {
+  costPerTokenInput: numeric("cost_per_token_input", { precision: 10, scale: 8 }).default("0"),
+  costPerTokenOutput: numeric("cost_per_token_output", { precision: 10, scale: 8 }).default("0"),
+  quotaLimit: bigint("quota_limit", { mode: "number" }),
+  quotaUsed: bigint("quota_used", { mode: "number" }).default(0),
+  quotaResetAt: timestamp("quota_reset_at"),
+  status: varchar("status", {
+    length: 50,
     enum: ["idle", "working", "blocked", "offline"],
   }).default("idle"),
-  lastHeartbeat: text("last_heartbeat"),
+  lastHeartbeat: timestamp("last_heartbeat"),
   metadata: text("metadata").default("{}"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ============================================================================
 // Projects
 // ============================================================================
 
-export const projects = sqliteTable("projects", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
+export const projects = pgTable("projects", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  organizationId: varchar("organization_id", { length: 255 })
     .notNull()
     .references(() => organizations.id, { onDelete: "cascade" }),
-  name: text("name").notNull(),
-  slug: text("slug").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  slug: varchar("slug", { length: 255 }).notNull(),
   description: text("description"),
   rootPath: text("root_path"),
   gitRemote: text("git_remote"),
-  gitBranch: text("git_branch").default("main"),
-  conflictStrategy: text("conflict_strategy", {
+  gitBranch: varchar("git_branch", { length: 255 }).default("main"),
+  conflictStrategy: varchar("conflict_strategy", {
+    length: 50,
     enum: ["lock", "merge", "zone", "review"],
   }).default("lock"),
-  budgetTotal: real("budget_total"),
-  budgetSpent: real("budget_spent").default(0),
+  budgetTotal: numeric("budget_total", { precision: 10, scale: 2 }),
+  budgetSpent: numeric("budget_spent", { precision: 10, scale: 2 }).default("0"),
   budgetAlertThreshold: integer("budget_alert_threshold").default(80),
   settings: text("settings").default("{}"),
-  isActive: integer("is_active", { mode: "boolean" }).default(true),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // ============================================================================
 // Project Agents (Per-project agent configuration)
 // ============================================================================
 
-export const projectAgents = sqliteTable("project_agents", {
-  id: text("id").primaryKey(),
-  projectId: text("project_id")
+export const projectAgents = pgTable("project_agents", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  projectId: varchar("project_id", { length: 255 })
     .notNull()
     .references(() => projects.id, { onDelete: "cascade" }),
-  agentId: text("agent_id")
+  agentId: varchar("agent_id", { length: 255 })
     .notNull()
     .references(() => agents.id, { onDelete: "cascade" }),
-  role: text("role", {
+  role: varchar("role", {
+    length: 50,
     enum: ["lead", "contributor", "reviewer", "observer"],
   }).default("contributor"),
   customInstructions: text("custom_instructions"),
   instructionsFile: text("instructions_file"),
   allowedPaths: text("allowed_paths").default("[]"),
   deniedPaths: text("denied_paths").default("[]"),
-  tokenBudget: integer("token_budget"),
-  isEnabled: integer("is_enabled", { mode: "boolean" }).default(true),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
+  tokenBudget: bigint("token_budget", { mode: "number" }),
+  isEnabled: boolean("is_enabled").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ============================================================================
 // Tasks
 // ============================================================================
 
-export const tasks = sqliteTable("tasks", {
-  id: text("id").primaryKey(),
-  projectId: text("project_id")
+export const tasks = pgTable("tasks", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  projectId: varchar("project_id", { length: 255 })
     .notNull()
     .references(() => projects.id, { onDelete: "cascade" }),
-  parentId: text("parent_id"),
-  title: text("title").notNull(),
+  parentId: varchar("parent_id", { length: 255 }),
+  title: varchar("title", { length: 500 }).notNull(),
   description: text("description"),
-  status: text("status", {
+  status: varchar("status", {
+    length: 50,
     enum: [
       "pending",
       "claimed",
@@ -132,41 +137,43 @@ export const tasks = sqliteTable("tasks", {
       "cancelled",
     ],
   }).default("pending"),
-  priority: text("priority", {
+  priority: varchar("priority", {
+    length: 50,
     enum: ["critical", "high", "medium", "low"],
   }).default("medium"),
-  assignedTo: text("assigned_to").references(() => agents.id, {
+  assignedTo: varchar("assigned_to", { length: 255 }).references(() => agents.id, {
     onDelete: "set null",
   }),
-  claimedAt: text("claimed_at"),
-  startedAt: text("started_at"),
-  completedAt: text("completed_at"),
-  dueAt: text("due_at"),
+  claimedAt: timestamp("claimed_at"),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  dueAt: timestamp("due_at"),
   dependencies: text("dependencies").default("[]"),
-  blockedBy: text("blocked_by"),
-  estimatedTokens: integer("estimated_tokens"),
-  actualTokens: integer("actual_tokens"),
+  blockedBy: varchar("blocked_by", { length: 255 }),
+  estimatedTokens: bigint("estimated_tokens", { mode: "number" }),
+  actualTokens: bigint("actual_tokens", { mode: "number" }),
   files: text("files").default("[]"),
   tags: text("tags").default("[]"),
   result: text("result"),
   errorMessage: text("error_message"),
   metadata: text("metadata").default("{}"),
-  createdBy: text("created_by"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  createdBy: varchar("created_by", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // ============================================================================
 // Task Activities
 // ============================================================================
 
-export const taskActivities = sqliteTable("task_activities", {
-  id: text("id").primaryKey(),
-  taskId: text("task_id")
+export const taskActivities = pgTable("task_activities", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  taskId: varchar("task_id", { length: 255 })
     .notNull()
     .references(() => tasks.id, { onDelete: "cascade" }),
-  agentId: text("agent_id"),
-  action: text("action", {
+  agentId: varchar("agent_id", { length: 255 }),
+  action: varchar("action", {
+    length: 50,
     enum: [
       "created",
       "claimed",
@@ -183,78 +190,81 @@ export const taskActivities = sqliteTable("task_activities", {
   }).notNull(),
   description: text("description"),
   metadata: text("metadata").default("{}"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ============================================================================
 // File Locks
 // ============================================================================
 
-export const fileLocks = sqliteTable("file_locks", {
-  id: text("id").primaryKey(),
-  projectId: text("project_id")
+export const fileLocks = pgTable("file_locks", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  projectId: varchar("project_id", { length: 255 })
     .notNull()
     .references(() => projects.id, { onDelete: "cascade" }),
   filePath: text("file_path").notNull(),
-  agentId: text("agent_id").notNull(),
-  taskId: text("task_id").references(() => tasks.id, { onDelete: "set null" }),
-  lockedAt: text("locked_at").default("CURRENT_TIMESTAMP"),
-  expiresAt: text("expires_at"),
+  agentId: varchar("agent_id", { length: 255 }).notNull(),
+  taskId: varchar("task_id", { length: 255 }).references(() => tasks.id, { onDelete: "set null" }),
+  lockedAt: timestamp("locked_at").defaultNow(),
+  expiresAt: timestamp("expires_at"),
 });
 
 // ============================================================================
 // File Conflicts
 // ============================================================================
 
-export const fileConflicts = sqliteTable("file_conflicts", {
-  id: text("id").primaryKey(),
-  projectId: text("project_id")
+export const fileConflicts = pgTable("file_conflicts", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  projectId: varchar("project_id", { length: 255 })
     .notNull()
     .references(() => projects.id, { onDelete: "cascade" }),
   filePath: text("file_path").notNull(),
   agents: text("agents").default("[]"),
-  strategy: text("strategy", {
+  strategy: varchar("strategy", {
+    length: 50,
     enum: ["lock", "merge", "zone", "review"],
   }).notNull(),
-  resolution: text("resolution", {
+  resolution: varchar("resolution", {
+    length: 50,
     enum: ["accepted", "rejected", "merged", "waiting"],
   }),
-  resolvedBy: text("resolved_by"),
-  resolvedAt: text("resolved_at"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
+  resolvedBy: varchar("resolved_by", { length: 255 }),
+  resolvedAt: timestamp("resolved_at"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ============================================================================
 // Cost Events
 // ============================================================================
 
-export const costEvents = sqliteTable("cost_events", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
+export const costEvents = pgTable("cost_events", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  organizationId: varchar("organization_id", { length: 255 })
     .notNull()
     .references(() => organizations.id, { onDelete: "cascade" }),
-  projectId: text("project_id")
+  projectId: varchar("project_id", { length: 255 })
     .notNull()
     .references(() => projects.id, { onDelete: "cascade" }),
-  agentId: text("agent_id").notNull(),
-  taskId: text("task_id"),
-  model: text("model").notNull(),
-  tokensInput: integer("tokens_input").notNull(),
-  tokensOutput: integer("tokens_output").notNull(),
-  cost: real("cost").notNull(),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
+  agentId: varchar("agent_id", { length: 255 }).notNull(),
+  taskId: varchar("task_id", { length: 255 }),
+  model: varchar("model", { length: 255 }).notNull(),
+  tokensInput: bigint("tokens_input", { mode: "number" }).notNull(),
+  tokensOutput: bigint("tokens_output", { mode: "number" }).notNull(),
+  cost: numeric("cost", { precision: 10, scale: 6 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ============================================================================
 // Escalations (Oversight Queue)
 // ============================================================================
 
-export const escalations = sqliteTable("escalations", {
-  id: text("id").primaryKey(),
-  projectId: text("project_id")
+export const escalations = pgTable("escalations", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  projectId: varchar("project_id", { length: 255 })
     .notNull()
     .references(() => projects.id, { onDelete: "cascade" }),
-  type: text("type", {
+  type: varchar("type", {
+    length: 50,
     enum: [
       "oauth_required",
       "merge_conflict",
@@ -264,68 +274,72 @@ export const escalations = sqliteTable("escalations", {
       "manual_intervention",
     ],
   }).notNull(),
-  priority: text("priority", {
+  priority: varchar("priority", {
+    length: 50,
     enum: ["critical", "high", "normal", "low"],
   })
     .notNull()
     .default("normal"),
-  status: text("status", {
+  status: varchar("status", {
+    length: 50,
     enum: ["pending", "snoozed", "resolved", "escalated"],
   })
     .notNull()
     .default("pending"),
-  title: text("title").notNull(),
+  title: varchar("title", { length: 500 }).notNull(),
   description: text("description"),
   context: text("context").default("{}"), // JSON with taskId, agentId, etc.
-  assignedTo: text("assigned_to"), // userId
-  resolvedBy: text("resolved_by"), // userId
+  assignedTo: varchar("assigned_to", { length: 255 }), // userId
+  resolvedBy: varchar("resolved_by", { length: 255 }), // userId
   resolution: text("resolution"),
-  snoozedUntil: text("snoozed_until"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
-  resolvedAt: text("resolved_at"),
+  snoozedUntil: timestamp("snoozed_until"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  resolvedAt: timestamp("resolved_at"),
 });
 
 // ============================================================================
 // Agent Instances (Runtime tracking)
 // ============================================================================
 
-export const agentInstances = sqliteTable("agent_instances", {
-  id: text("id").primaryKey(),
-  agentId: text("agent_id")
+export const agentInstances = pgTable("agent_instances", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  agentId: varchar("agent_id", { length: 255 })
     .notNull()
     .references(() => agents.id, { onDelete: "cascade" }),
-  projectId: text("project_id")
+  projectId: varchar("project_id", { length: 255 })
     .notNull()
     .references(() => projects.id, { onDelete: "cascade" }),
-  sessionId: text("session_id").notNull().unique(),
-  status: text("status", {
+  sessionId: varchar("session_id", { length: 255 }).notNull().unique(),
+  status: varchar("status", {
+    length: 50,
     enum: ["idle", "working", "blocked", "offline"],
   }).default("idle"),
-  currentTaskId: text("current_task_id").references(() => tasks.id, {
+  currentTaskId: varchar("current_task_id", { length: 255 }).references(() => tasks.id, {
     onDelete: "set null",
   }),
-  lastHeartbeat: text("last_heartbeat").notNull(),
+  lastHeartbeat: timestamp("last_heartbeat").notNull(),
   metadata: text("metadata").default("{}"),
-  startedAt: text("started_at").default("CURRENT_TIMESTAMP"),
+  startedAt: timestamp("started_at").defaultNow(),
 });
 
 // ============================================================================
 // Connector Configs
 // ============================================================================
 
-export const connectorConfigs = sqliteTable("connector_configs", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id")
+export const connectorConfigs = pgTable("connector_configs", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  organizationId: varchar("organization_id", { length: 255 })
     .notNull()
     .references(() => organizations.id, { onDelete: "cascade" }),
-  type: text("type", {
+  type: varchar("type", {
+    length: 50,
     enum: ["github", "gitlab", "slack", "discord", "webhook"],
   }).notNull(),
-  name: text("name").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
   config: text("config").default("{}"),
-  isEnabled: integer("is_enabled", { mode: "boolean" }).default(true),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
+  isEnabled: boolean("is_enabled").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // ============================================================================
@@ -379,40 +393,41 @@ export const agentsRelations = relations(agents, ({ one, many }) => ({
 // Users (for per-user secrets and preferences)
 // ============================================================================
 
-export const users = sqliteTable("users", {
-  id: text("id").primaryKey(),
-  email: text("email").notNull().unique(),
-  name: text("name"),
+export const users = pgTable("users", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  name: varchar("name", { length: 255 }),
   passwordHash: text("password_hash"), // For local auth (optional if using OAuth)
-  authProvider: text("auth_provider", {
+  authProvider: varchar("auth_provider", {
+    length: 50,
     enum: ["local", "google", "github"],
   }).default("local"),
-  authProviderId: text("auth_provider_id"), // External ID from OAuth provider
+  authProviderId: varchar("auth_provider_id", { length: 255 }), // External ID from OAuth provider
   avatarUrl: text("avatar_url"),
-  isActive: integer("is_active", { mode: "boolean" }).default(true),
-  lastLoginAt: text("last_login_at"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  isActive: boolean("is_active").default(true),
+  lastLoginAt: timestamp("last_login_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // ============================================================================
 // User Secrets (encrypted per-user API keys)
 // ============================================================================
 
-export const userSecrets = sqliteTable("user_secrets", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
+export const userSecrets = pgTable("user_secrets", {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  userId: varchar("user_id", { length: 255 })
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
-  name: text("name").notNull(), // e.g., "E2B_API_KEY", "ANTHROPIC_API_KEY"
+  name: varchar("name", { length: 255 }).notNull(), // e.g., "E2B_API_KEY", "ANTHROPIC_API_KEY"
   encryptedValue: text("encrypted_value").notNull(), // AES-256-GCM encrypted
-  iv: text("iv").notNull(), // Initialization vector for decryption
-  authTag: text("auth_tag").notNull(), // GCM authentication tag
-  provider: text("provider"), // Optional: which service this key is for
-  expiresAt: text("expires_at"), // Optional expiration
-  lastUsedAt: text("last_used_at"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP"),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP"),
+  iv: varchar("iv", { length: 255 }).notNull(), // Initialization vector for decryption
+  authTag: varchar("auth_tag", { length: 255 }).notNull(), // GCM authentication tag
+  provider: varchar("provider", { length: 255 }), // Optional: which service this key is for
+  expiresAt: timestamp("expires_at"), // Optional expiration
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // ============================================================================

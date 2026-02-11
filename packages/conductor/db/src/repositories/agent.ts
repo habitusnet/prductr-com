@@ -171,7 +171,7 @@ export function createAgentRepository(db: any) {
     },
 
     async cleanupExpiredLocks() {
-      const now = new Date().toISOString();
+      const now = new Date();
       await db.delete(fileLocks).where(lt(fileLocks.expiresAt, now));
     },
   };
