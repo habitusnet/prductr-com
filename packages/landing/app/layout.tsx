@@ -19,7 +19,7 @@ export default function RootLayout({
         <script
           defer
           src="https://static.cloudflareinsights.com/beacon.min.js"
-          data-cf-beacon='{"token": "YOUR_CLOUDFLARE_ANALYTICS_TOKEN"}'
+          data-cf-beacon='{"token": "72c4f9d78a18479da134fa0e1869e036"}'
         />
       </head>
       <body className="antialiased">{children}</body>
